@@ -3,7 +3,18 @@ name: Assignment Portal CI
 
 on:
   push:
+    branches:
+      - main
   workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-deployment
+  cancel-in-progress: false
 
 jobs:
   test:
@@ -21,17 +32,44 @@ jobs:
         run: py -3.11 --version
 
       - name: Install dependencies
-        run: python -m pip install -r requirements.txt
+        run: py -3.11 -m pip install -r requirements.txt
 
       - name: Run automated tests
         id: tests
         continue-on-error: true
-        run: python -m pytest -v --junitxml=pytest-results.xml
+        run: py -3.11 -m pytest -v --junitxml=pytest-results.xml
 
       - name: Send test report to localhost
         if: always() && steps.tests.outcome != 'skipped'
-        run: python send_report.py
+        run: py -3.11 send_report.py
 
       - name: Fail workflow if tests failed
         if: steps.tests.outcome == 'failure'
         run: exit 1
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: test
+    if: github.ref == 'refs/heads/main' && needs.test.result == 'success'
+
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload static website
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - name: Deploy website
+        id: deployment
+        uses: actions/deploy-pages@v4

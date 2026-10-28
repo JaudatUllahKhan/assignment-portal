@@ -1,0 +1,159 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+    <title>Assignment Submission Portal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f4f8;
+            padding: 30px;
+        }
+        .container {
+            max-width: 850px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+        }
+        input, button {
+            width: 100%;
+            padding: 12px;
+            margin: 7px 0;
+            box-sizing: border-box;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+            overflow-wrap: anywhere;
+        }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Assignment Submission Portal</h1>
+    <p>GitHub Pages Demo — Local Browser Storage</p>
+
+    <form id="submissionForm">
+        <input id="name" placeholder="Student Name">
+        <input id="registration"
+               placeholder="Registration Number">
+        <input id="title" placeholder="Assignment Title">
+        <input id="url" placeholder="Submission URL">
+        <button type="submit">Submit Assignment</button>
+    </form>
+
+    <p id="message" role="status"></p>
+
+    <h2>Saved Submissions</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Registration</th>
+                <th>Assignment</th>
+                <th>URL</th>
+            </tr>
+        </thead>
+        <tbody id="submissions"></tbody>
+    </table>
+</div>
+
+<script>
+const form = document.getElementById("submissionForm");
+const message = document.getElementById("message");
+const table = document.getElementById("submissions");
+const storageKey = "assignment-portal-demo";
+
+function getSubmissions() {
+    return JSON.parse(localStorage.getItem(storageKey) || "[]");
+}
+
+function showSubmissions() {
+    table.replaceChildren();
+
+    getSubmissions().forEach(item => {
+        const row = document.createElement("tr");
+
+        [item.name, item.registration, item.title].forEach(value => {
+            const cell = document.createElement("td");
+            cell.textContent = value;
+            row.appendChild(cell);
+        });
+
+        const linkCell = document.createElement("td");
+        const link = document.createElement("a");
+        link.href = item.url;
+        link.textContent = "View Submission";
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        linkCell.appendChild(link);
+        row.appendChild(linkCell);
+
+        table.appendChild(row);
+    });
+}
+
+form.addEventListener("submit", event => {
+    event.preventDefault();
+
+    const name = document.getElementById("name").value.trim();
+    const registration =
+        document.getElementById("registration").value.trim();
+    const title = document.getElementById("title").value.trim();
+    const url = document.getElementById("url").value.trim();
+
+    message.className = "error";
+
+    if (!name || !registration || !title || !url) {
+        message.textContent = "All fields are required.";
+        return;
+    }
+
+    try {
+        const parsed = new URL(url);
+        if (!["http:", "https:"].includes(parsed.protocol) ||
+            !parsed.hostname.includes(".")) {
+            throw new Error("Invalid URL");
+        }
+    } catch {
+        message.textContent = "Invalid submission URL.";
+        return;
+    }
+
+    const submissions = getSubmissions();
+    submissions.push({name, registration, title, url});
+
+    localStorage.setItem(
+        storageKey,
+        JSON.stringify(submissions)
+    );
+
+    message.className = "success";
+    message.textContent = "Assignment submitted successfully!";
+
+    form.reset();
+    showSubmissions();
+});
+
+showSubmissions();
+</script>
+</body>
+</html>
