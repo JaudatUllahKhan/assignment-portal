@@ -19,6 +19,7 @@ def client(tmp_path, monkeypatch):
 
 
 def test_valid_submission(client):
+    assert False, "Intentional CI failure for email reporting demonstration"
     response = client.post("/", data={
         "name": "Ali Khan",
         "registration": "FA23-BSE-001",
