@@ -133,7 +133,7 @@ def home():
         title = request.form.get("title", "").strip()
         url = request.form.get("url", "").strip()
 
-        if not all([name, title, url]):
+        if not all([name, registration, title, url]):
             message = "All fields are required."
             category = "error"
 
