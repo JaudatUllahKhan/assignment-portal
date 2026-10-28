@@ -28,21 +28,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      
       - name: Check Python
-        run: py -3.11 --version
+        run: '& "D:\Python312\python.exe" --version'
 
       - name: Install dependencies
-        run: py -3.11 -m pip install -r requirements.txt
+        run: '& "D:\Python312\python.exe" -m pip install -r requirements.txt'
 
       - name: Run automated tests
         id: tests
         continue-on-error: true
-        run: py -3.11 -m pytest -v --junitxml=pytest-results.xml
+        run: '& "D:\Python312\python.exe" -m pytest test_app.py -v --junitxml=pytest-results.xml'
 
       - name: Send test report to localhost
         if: always() && steps.tests.outcome != 'skipped'
-        run: py -3.11 send_report.py
+        run: '& "D:\Python312\python.exe" send_report.py'
 
+  
       - name: Fail workflow if tests failed
         if: steps.tests.outcome == 'failure'
         run: exit 1
