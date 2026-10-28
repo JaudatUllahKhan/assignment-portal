@@ -28,7 +28,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      
       - name: Check Python
         run: '& "D:\Python312\python.exe" --version'
 
@@ -40,11 +39,18 @@ jobs:
         continue-on-error: true
         run: '& "D:\Python312\python.exe" -m pytest test_app.py -v --junitxml=pytest-results.xml'
 
-      - name: Send test report to localhost
+      - name: Send JSON report to localhost
         if: always() && steps.tests.outcome != 'skipped'
         run: '& "D:\Python312\python.exe" send_report.py'
 
-  
+      - name: Send Gmail test report
+        if: always() && steps.tests.outcome != 'skipped'
+        env:
+          GMAIL_USERNAME: ${{ secrets.GMAIL_USERNAME }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          REPORT_EMAIL: ${{ secrets.REPORT_EMAIL }}
+        run: '& "D:\Python312\python.exe" send_email.py'
+
       - name: Fail workflow if tests failed
         if: steps.tests.outcome == 'failure'
         run: exit 1
